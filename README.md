@@ -15,3 +15,12 @@ dotabot is a Discord bot running in Heroku with some DotA 2 commands.
     source secrets.sh
     python bot/dotabot.py
     ```
+
+## Updating dota wiki data
+
+When a new patch hits, use the scraper script to generate `dota_wiki.yml`.
+
+```bash
+cd bot
+python ./dota_wiki.py
+```

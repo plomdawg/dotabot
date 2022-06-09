@@ -1,2 +1,6 @@
 # Discord API
 git+https://github.com/Pycord-Development/pycord
+
+# Needed to use voice.
+pynacl
+

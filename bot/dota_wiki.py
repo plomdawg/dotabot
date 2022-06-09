@@ -52,7 +52,9 @@ class Response:
 class Ability:
     def __init__(self, element):
         # Extract the lore text.
-        self.lore = element.find(class_="ability-lore").text
+        self.lore = element.find(class_="ability-lore")
+        if self.lore is not None:
+            self.lore = self.lore.text
 
         # Extract the thumbnail.
         self.thumbnail = element.find(class_='image').get('href')
@@ -71,18 +73,21 @@ class Ability:
         }
 
 
+def _load_page(url) -> BeautifulSoup:
+    # Load the page into BeautifulSoup.
+    print(f"Loading: {url}")
+    page = requests.get(url)
+    return BeautifulSoup(page.text, 'html.parser')
+
+
 def get_abilities(hero) -> list:
     abilities = []
 
     # Dota wiki page that lists all abilities for a hero.
-    url = f"{hero.url}"
-
-    # Load the page into BeautifulSoup.
-    page = requests.get(url)
-    soup = BeautifulSoup(page.text, 'html.parser')
+    page = _load_page(hero.url)
 
     # Find the ability elements on the page.
-    for element in soup.find_all(class_='ability-background'):
+    for element in page.find_all(class_='ability-background'):
         abilities.append(Ability(element))
 
     return abilities
@@ -93,39 +98,39 @@ def get_responses(hero) -> list:
     responses = []
 
     # Dota wiki page that lists all responses for a hero.
-    url = f"{hero.url}/Responses"
-
-    # Load the page into BeautifulSoup.
-    page = requests.get(url)
-    soup = BeautifulSoup(page.text, 'html.parser')
+    page = _load_page(f"{hero.url}/Responses")
 
     # Find the main content on the page.
-    content = soup.find(class_='mw-parser-output')
+    content = page.find(class_='mw-parser-output')
 
-    # Find all of the response elements on the page.
-    for element in content.find_all('li'):
-        audio_element = element.find('audio')
+    # Skip pages that don't have content.
+    # (like https://dota2.fandom.com/wiki/Crystal_Maiden/Dragon%27s_Blood/Responses)
+    if content is not None:
 
-        # Ignore elements that don't contain an audio element.
-        if audio_element is None:
-            continue
+        # Find all of the response elements on the page.
+        for element in content.find_all('li'):
+            audio_element = element.find('audio')
 
-        # Ignore elements that don't contain an audio link.
-        audio_source = audio_element.find('source')
-        if audio_source is None:
-            continue
-        voice_line_url = audio_source.get('src')
+            # Ignore elements that don't contain an audio element.
+            if audio_element is None:
+                continue
 
-        # Remove italicized text.
-        for elem in element.find_all('span'):
-            elem.decompose()
+            # Ignore elements that don't contain an audio link.
+            audio_source = audio_element.find('source')
+            if audio_source is None:
+                continue
+            voice_line_url = audio_source.get('src')
 
-        # Remove extra spaces from the element.
-        voice_line_text = element.text.strip()
+            # Remove italicized text.
+            for elem in element.find_all('span'):
+                elem.decompose()
 
-        # Add the response to the dict.
-        # responses[voice_line_text] = voice_line_url
-        responses.append(Response(voice_line_text, voice_line_url))
+            # Remove extra spaces from the element.
+            voice_line_text = element.text.strip()
+
+            # Add the response to the dict.
+            # responses[voice_line_text] = voice_line_url
+            responses.append(Response(voice_line_text, voice_line_url))
 
     # Return the responses.
     return responses
@@ -155,13 +160,10 @@ def get_heroes() -> list:
     heroes = []
 
     # Dota wiki page that lists all heroes.
-    url = "https://dota2.fandom.com/wiki/Template:Lore_nav/heroes"
-
-    # Load the page into BeautifulSoup.
-    soup = BeautifulSoup(requests.get(url).text, 'html.parser')
+    page = _load_page("https://dota2.fandom.com/wiki/Template:Lore_nav/heroes")
 
     # Find the main content on the page.
-    content = soup.find(class_='notanavbox-list notanavbox-odd')
+    content = page.find(class_='notanavbox-list notanavbox-odd')
 
     # Find all of the hero elements on the page.
     for hero_element in content.find_all('a'):
@@ -176,13 +178,10 @@ def get_items() -> list:
     items = []
 
     # Dota wiki page that lists all items.
-    url = "https://dota2.fandom.com/wiki/Items"
-
-    # Load the page into BeautifulSoup.
-    soup = BeautifulSoup(requests.get(url).text, 'html.parser')
+    page = _load_page("https://dota2.fandom.com/wiki/Items")
 
     # Find the main content on the page.
-    content = soup.find(class_='mw-parser-output')
+    content = page.find(class_='mw-parser-output')
 
     # Remove stuff we do not need.
     content.find(id='pageTabber').decompose()

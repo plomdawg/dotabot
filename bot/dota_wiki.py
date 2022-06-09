@@ -168,7 +168,10 @@ def get_heroes() -> list:
     # Find all of the hero elements on the page.
     for hero_element in content.find_all('a'):
         # Create hero object.
-        heroes.append(Hero(hero_element))
+        hero = Hero(hero_element)
+        # Ignore hero variants (like "Terrorblade (Dragon's Blood)")
+        if "(" not in hero.name:
+            heroes.append(hero)
 
     return heroes
 

@@ -5,6 +5,9 @@ from discord import Embed
 from discord.ext import commands
 
 command_list = """
+"/quiz" - *Play the Shopkeeper's quiz*
+"/gold" - *Check your gold balance*
+"/top" - *List the top gold balances*
 "[exact quote]" - *Play a voiceline*
 "any [partial quote]" - *Play a voiceline*
 "dota [partial quote]" - *Play a voiceline*

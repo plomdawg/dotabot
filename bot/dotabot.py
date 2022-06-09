@@ -50,20 +50,15 @@ class DotaBot(discord.Bot):
         # Load cogs.
         self.load_extension('cogs.help')
         self.load_extension('cogs.error_handler')
+        self.load_extension('cogs.voice_lines')
 
         @self.event
         async def on_ready():
             """ Called after the bot successfully connects to Discord servers """
             print(f"Connected as {self.user.display_name}")
 
-            # Change presence to "Playing dota sounds in 69 guilds"
-            text = f"dota sounds in {len(self.guilds)} guilds"
-            activity = discord.Activity(
-                name=text, type=discord.ActivityType.streaming)
-            await self.change_presence(activity=activity)
-
             # Print guild info
-            print(f"Active in {len(self.guilds)} guilds:")
+            print(f"Active in {len(self.guilds)} servers:")
             user_count = 0
             for guild in self.guilds:
                 try:

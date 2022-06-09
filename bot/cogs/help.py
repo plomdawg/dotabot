@@ -1,7 +1,25 @@
 import logging
 
 from discord.commands import slash_command
+from discord import Embed
 from discord.ext import commands
+
+command_list = """
+"[exact quote]" - *Play a voiceline*
+"any [partial quote]" - *Play a voiceline*
+"dota [partial quote]" - *Play a voiceline*
+"dota [partial quote] [n]" - *Play voiceline n out of many*
+"random [hero]" - *Play a hero's voiceline*
+"dotabot leave" - *Make dotabot disconnect*
+"""
+
+
+example_list = """
+"Ho ho." - *Plays "Ho ho. (Lifestealer)"*
+"Ha ha. 10" - *Plays "Ha ha. (Invoker) (10 out of 17)"*
+"any banana" - *Plays "That's the biggest banana slug I've ever seen. (Monkey King)"*
+"random Techies" - *Play a random Techies voice line*
+"""
 
 
 class Help(commands.Cog):
@@ -11,7 +29,13 @@ class Help(commands.Cog):
     @slash_command(name="help", description="Learn how to use this bot")
     async def _help(self, ctx):
         """Sends help message """
-        await ctx.send(f"[Invite dotabot to a new server](f{self.bot.invite_link})")
+        embed = Embed()
+        embed.add_field(name="Commands", value=command_list, inline=False)
+        embed.add_field(name="Examples", value=example_list, inline=False)
+        embed.add_field(
+            name="Invite", value=f"[Invite dotabot to a new server]({self.bot.invite_link})")
+        embed.color = 0xFF0000
+        await ctx.respond(content="", embed=embed)
 
 
 def setup(bot):

@@ -62,13 +62,13 @@ class Database(commands.Cog):
         embed.set_thumbnail(
             url="https://api.opendota.com/apps/dota2/images/abilities/alchemist_goblins_greed_md.png")
         embed.description = text
-        await ctx.send(embed=embed)
+        await ctx.respond(embed=embed)
 
     @slash_command(name="gold", description="Check your current gold balance.")
     async def gold(self, ctx):
         """ Sends the user's current gold balance """
         gold = self.user_get_gold(ctx.author)
-        await ctx.send(f"{ctx.author.mention}, you have **{gold}** gold.")
+        await ctx.respond(f"{ctx.author.mention}, you have **{gold}** gold.")
 
 
 def setup(bot):

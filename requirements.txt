@@ -1,0 +1,2 @@
+# Discord API
+git+https://github.com/Pycord-Development/pycord

@@ -51,6 +51,7 @@ class DotaBot(discord.Bot):
         self.load_extension('cogs.help')
         self.load_extension('cogs.error_handler')
         self.load_extension('cogs.emojis')
+        self.load_extension('cogs.database')
         self.load_extension('cogs.voice_lines')
 
         @self.event

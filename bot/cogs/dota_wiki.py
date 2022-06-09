@@ -164,7 +164,7 @@ def get_heroes() -> list:
     content = soup.find(class_='notanavbox-list notanavbox-odd')
 
     # Find all of the hero elements on the page.
-    for hero_element in content.find_all('a')[:1]:
+    for hero_element in content.find_all('a'):
         # Create hero object.
         heroes.append(Hero(hero_element))
 

@@ -28,9 +28,6 @@ class VoiceLines(commands.Cog):
             yaml_data = yaml.safe_load(f)
             print("Loaded yaml data")
 
-        # Add the responses to the table.
-        #query = f"INSERT INTO responses ({','.join(fields)}) VALUES (?,?,?,?,?)"
-
         for hero in yaml_data['heroes']:
             name = hero['_name']
             responses_url = f"{hero['url']}/Responses"

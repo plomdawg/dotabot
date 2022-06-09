@@ -24,3 +24,16 @@ When a new patch hits, use the scraper script to generate `dota_wiki.yml`.
 cd bot
 python ./dota_wiki.py
 ```
+
+```console
+avalon@homer:~/dotabot/bot$ python dota_wiki.py 
+Loading: https://dota2.fandom.com/wiki/Items
+Loading: https://dota2.fandom.com/wiki/Template:Lore_nav/heroes
+Loading: https://dota2.fandom.com/wiki/Abaddon/Responses
+Loading: https://dota2.fandom.com/wiki/Abaddon
+Abaddon has 315 responses and 4 abilities.
+Loading: https://dota2.fandom.com/wiki/Alchemist/Responses
+Loading: https://dota2.fandom.com/wiki/Alchemist
+Alchemist has 387 responses and 7 abilities.
+...
+```

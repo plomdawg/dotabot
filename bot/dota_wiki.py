@@ -136,6 +136,39 @@ def get_responses(hero) -> list:
     return responses
 
 
+def get_thumbnail(hero) -> str:
+    """ hard coding the thumbnails here """
+    name = hero.name
+
+    # Default
+    url = "https://icon-library.net/images/dota-2-icon/dota-2-icon-28.jpg"
+
+    # Voice packs - get the text inside parens
+    if "(" in name:
+        name = name.split('(')[1].split(')')[0]
+
+    # Other Responses
+    if name == "Warlock's Golem":
+        url = "https://i.imgur.com/F49q2Gf.png"
+    elif name == "Shopkeeper":
+        url = "https://i.imgur.com/Xyf1VjQ.png"
+    elif name == "Announcer":
+        url = "https://i.imgur.com/B8pD7m2.png"
+
+    # Announcer Packs
+    elif name == "Gabe Newell":
+        url = "https://i.imgur.com/a1tnZusr/bin/python3.8 -u /opt/dotabot/dotabot.pyAw.png"
+
+    # Heroes
+    elif name == "Skeleton King":
+        url = "https://i.imgur.com/WEwzR0Z.png"
+    else:
+        hero = name.replace(' ', '_').replace('-', '').lower()
+        url = f"https://api.opendota.com/apps/dota2/images/heroes/{hero}_full.png"
+
+    return url
+
+
 class Hero:
     def __init__(self, element) -> None:
         # Hero name (e.g. 'Techies')
@@ -145,6 +178,9 @@ class Hero:
         # Dota wiki URL (e.g. 'https://dota2.fandom.com/wiki/Techies')
         self.url = f"https://dota2.fandom.com{element.get('href').replace('/Lore', '')}"
 
+        # Thumbnail URL.
+        self.thumbnail = get_thumbnail(self)
+
         # Load responses.
         self.responses = get_responses(self)
 
@@ -153,6 +189,15 @@ class Hero:
 
         print(
             f"{self.name} has {len(self.responses)} responses and {len(self.abilities)} abilities.")
+
+    def to_dict(self) -> dict:
+        return {
+            '_name': self.name,
+            'url': self.url,
+            'thumbnail': self.thumbnail,
+            'abilities': [a.to_dict() for a in self.abilities],
+            'responses': [r.to_dict() for r in self.responses]
+        }
 
 
 def get_heroes() -> list:
@@ -214,18 +259,7 @@ if __name__ == "__main__":
 
     # Get list of heroes.
     for hero in get_heroes():
-        # Append name with _ so it shows at the top of the yaml block.
-        hero_data = {'_name': hero.name}
-
-        # Add abilities.
-        ability_data = [a.to_dict() for a in hero.abilities]
-        hero_data['abilities'] = ability_data
-
-        # Add responses.
-        response_data = [r.to_dict() for r in hero.responses]
-        hero_data['responses'] = response_data
-
-        data['heroes'].append(hero_data)
+        data['heroes'].append(hero.to_dict())
 
     with open('dota_wiki.yml', 'w') as yaml_file:
         yaml.dump(data, yaml_file, default_flow_style=False, Dumper=Dumper,

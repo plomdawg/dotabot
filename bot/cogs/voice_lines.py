@@ -149,35 +149,17 @@ class VoiceLines(commands.Cog):
             return None, 0, 0
 
     async def play_response(self, channel, url):
-        """ Connects to a voice channel and plays the mp3 in the url """
-
-        # Downloading the songs wasn't working out - play them directly from the url for now
-
-        # Create the mp3 directory.
-        #sound_dir = Path('./sounds')
-        # sound_dir.mkdir(exist_ok=True)
-
-        # Take the filename from the url.
-        #filename = url.rsplit('/', 1)[1]
-        #mp3_path = sound_dir / Path(filename)
-
-        # Download the mp3 if it's missing
-        # if not os.path.isfile(mp3_path):
-        #    print(f"Downloading: {sound_dir}")
-        #    r = requests.get(url)
-        #    with open(mp3_path, 'wb') as f:
-        #        f.write(r.content)
-
+        """ Plays an mp3 from a URL in a voice channel """
         # Connect to the voice channel
         await self.Connect(channel)
 
-        # Set up ffmpeg stream
+        # Set up ffmpeg stream at 17% volume
         audio = discord.PCMVolumeTransformer(
             discord.FFmpegPCMAudio(
                 source=url,
                 options=f"-af loudnorm=I=-16.0:TP=-1.0"
             ),
-            volume=2
+            volume=1.7
         )
 
         # Begin playback and wait for it to finish

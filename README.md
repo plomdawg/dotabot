@@ -1,6 +1,6 @@
 # dotabot
 
-dotabot is a Discord bot running in Heroku with some DotA 2 commands.
+dotabot is a Discord bot running in Heroku that plays hero responses when typed in chat.
 
 [Invite to a server](https://discordapp.com/oauth2/authorize?client_id=649351968623427640&scope=bot&permissions=1110453312)
 

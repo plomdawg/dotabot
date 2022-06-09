@@ -1,11 +1,14 @@
 # dotabot
 
-dotabot is a Discord bot running in Heroku that plays hero responses when typed in chat.
-
 [Invite to a server](https://discordapp.com/oauth2/authorize?client_id=649351968623427640&scope=bot&permissions=1110453312)
+
+dotabot is a Discord bot running in Heroku that plays hero responses when typed in chat.
 
 ![image](https://user-images.githubusercontent.com/6510862/172931649-3ea306e2-2787-4225-9797-295d5aaca392.png)
 
+It also features the Shopkeeper's Quiz `/quiz`
+
+![image](https://user-images.githubusercontent.com/6510862/172955073-6d0a00af-bb11-4899-80f7-87478426f516.png)
 
 ## Running the bot locally
 

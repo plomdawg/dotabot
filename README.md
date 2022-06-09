@@ -4,6 +4,9 @@ dotabot is a Discord bot running in Heroku with some DotA 2 commands.
 
 [Invite to a server](https://discordapp.com/oauth2/authorize?client_id=649351968623427640&scope=bot&permissions=1110453312)
 
+![image](https://user-images.githubusercontent.com/6510862/172931649-3ea306e2-2787-4225-9797-295d5aaca392.png)
+
+
 ## Running the bot locally
 
 1. Get the Discord Client ID and secret token from the [Discord Developer Portal](https://discord.com/developers/applications/).

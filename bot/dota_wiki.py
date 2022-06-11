@@ -4,73 +4,14 @@ from bs4 import BeautifulSoup
 import time
 import sys
 
+DOTA_WIKI_URL = "https://dota2.fandom.com"
 
 # Fix yaml indenting (https://stackoverflow.com/a/39681672/12757998).
+
+
 class Dumper(yaml.Dumper):
     def increase_indent(self, flow=False, indentless=False):
         return super(Dumper, self).increase_indent(flow, False)
-
-
-class Item:
-    def __init__(self, element) -> None:
-
-        # Check if the element has a gold cost.
-        gold_element = element.find('span')
-        if gold_element is None:
-            self.gold_cost = None
-        else:
-            self.gold_cost = int(gold_element.text.strip())
-
-        # Extract the thumbnail and name from the element.
-        img = element.find('img')
-        self.thumbnail = img.get('data-src')
-        if self.thumbnail is None:
-            self.thumbnail = img.get('src')
-
-        self.name = element.find_all('a')[1].text
-
-    def to_dict(self) -> dict:
-        return {
-            '_name': self.name,
-            'gold_cost': self.gold_cost,
-            'thumbnail': self.thumbnail,
-        }
-
-
-class Response:
-    def __init__(self, text, url) -> None:
-        self.text = text
-        self.url = url
-
-    def to_dict(self) -> dict:
-        return {
-            'text': self.text,
-            'url': self.url
-        }
-
-
-class Ability:
-    def __init__(self, element):
-        # Extract the lore text.
-        self.lore = element.find(class_="ability-lore")
-        if self.lore is not None:
-            self.lore = self.lore.text
-
-        # Extract the thumbnail.
-        self.thumbnail = element.find(class_='image').get('href')
-
-        # Remove extra text from the div containing the ability name.
-        element.find('div').find('div').find('div').decompose()
-
-        # Remove extra spaces from the div containing the ability name.
-        self.name = element.find('div').find('div').text.strip()
-
-    def to_dict(self) -> dict:
-        return {
-            'name': self.name,
-            'lore': self.lore,
-            'thumbnail': self.thumbnail,
-        }
 
 
 def _load_page(url) -> BeautifulSoup:
@@ -88,7 +29,26 @@ def get_abilities(hero) -> list:
 
     # Find the ability elements on the page.
     for element in page.find_all(class_='ability-background'):
-        abilities.append(Ability(element))
+
+        # Extract the lore text.
+        lore = element.find(class_="ability-lore")
+        if lore is not None:
+            lore = lore.text
+
+        # Extract the thumbnail.
+        thumbnail = element.find(class_='image').get('href')
+
+        # Remove extra text from the div containing the ability name.
+        element.find('div').find('div').find('div').decompose()
+
+        # Remove extra spaces from the div containing the ability name.
+        name = element.find('div').find('div').text.strip()
+        ability = {
+            'name': name,
+            'lore': lore,
+            'thumbnail': thumbnail,
+        }
+        abilities.append(ability)
 
     return abilities
 
@@ -130,7 +90,11 @@ def get_responses(hero) -> list:
 
             # Add the response to the dict.
             # responses[voice_line_text] = voice_line_url
-            responses.append(Response(voice_line_text, voice_line_url))
+            response = {
+                'text': voice_line_text,
+                'url': voice_line_url
+            }
+            responses.append(response)
 
     # Return the responses.
     return responses
@@ -176,7 +140,7 @@ class Hero:
         self.name = element.text.replace('\xa0', ' ')
 
         # Dota wiki URL (e.g. 'https://dota2.fandom.com/wiki/Techies')
-        self.url = f"https://dota2.fandom.com{element.get('href').replace('/Lore', '')}"
+        self.url = f"{DOTA_WIKI_URL}{element.get('href').replace('/Lore', '')}"
 
         # Thumbnail URL.
         self.thumbnail = get_thumbnail(self)
@@ -195,8 +159,8 @@ class Hero:
             '_name': self.name,
             'url': self.url,
             'thumbnail': self.thumbnail,
-            'abilities': [a.to_dict() for a in self.abilities],
-            'responses': [r.to_dict() for r in self.responses]
+            'abilities': self.abilities,
+            'responses': self.responses
         }
 
 
@@ -205,7 +169,7 @@ def get_heroes() -> list:
     heroes = []
 
     # Dota wiki page that lists all heroes.
-    page = _load_page("https://dota2.fandom.com/wiki/Template:Lore_nav/heroes")
+    page = _load_page(f"{DOTA_WIKI_URL}/wiki/Template:Lore_nav/heroes")
 
     # Find the main content on the page.
     content = page.find(class_='notanavbox-list notanavbox-odd')
@@ -226,7 +190,7 @@ def get_items() -> list:
     items = []
 
     # Dota wiki page that lists all items.
-    page = _load_page("https://dota2.fandom.com/wiki/Items")
+    page = _load_page(f"{DOTA_WIKI_URL}/wiki/Items")
 
     # Find the main content on the page.
     content = page.find(class_='mw-parser-output')
@@ -242,9 +206,43 @@ def get_items() -> list:
 
     # Find all item lists on the page.
     itemlist_elements = content.find_all(class_='itemlist')
+
+    # Find all items in the lists.
     for itemlist in itemlist_elements:
-        for item_element in itemlist.find_all('div'):
-            items.append(Item(item_element))
+        for element in itemlist.find_all('div'):
+            # Grab the name from the list.
+            name = element.find_all('a')[1].text
+
+            # Check if the element has a gold cost.
+            gold_cost = element.find('span')
+            if gold_cost is not None:
+                gold_cost = int(gold_cost.text.strip())
+
+            # Extract the thumbnail and name from the element.
+            img = element.find('img')
+            thumbnail = img.get('data-src')
+            if thumbnail is None:
+                thumbnail = img.get('src')
+
+            # Load the item page.
+            page = _load_page(f"{DOTA_WIKI_URL}{element.find('a')['href']}")
+
+            # Find the info box on the page.
+            info_box = page.find(class_='infobox')
+
+            # Load the lore text
+            lore = info_box.find(
+                'td', attrs={'style': 'font-style:italic; padding:6px 10px;'}).text.strip()
+
+            item = {
+                '_name': name,
+                'gold_cost': gold_cost,
+                'lore': lore,
+                'thumbnail': thumbnail,
+            }
+
+            print(f"Adding item {name} {gold_cost} - {lore}")
+            items.append(item)
 
     return items
 
@@ -254,8 +252,7 @@ if __name__ == "__main__":
     data = {'heroes': [], 'items': []}
 
     # Get list of items.
-    for item in get_items():
-        data['items'].append(item.to_dict())
+    data['items'] = get_items()
 
     # Get list of heroes.
     for hero in get_heroes():

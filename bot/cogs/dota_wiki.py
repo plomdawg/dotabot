@@ -1,8 +1,6 @@
 import time
 
 import yaml
-from discord import Embed
-from discord.commands import slash_command
 from discord.ext import commands
 
 

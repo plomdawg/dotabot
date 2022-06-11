@@ -1,5 +1,3 @@
-import logging
-
 from discord.commands import slash_command
 from discord import Embed
 from discord.ext import commands

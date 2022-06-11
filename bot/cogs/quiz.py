@@ -4,7 +4,6 @@ import random
 import time
 
 import discord
-from matplotlib.pyplot import text
 from discord.commands import slash_command
 from discord.ext import commands
 

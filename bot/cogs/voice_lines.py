@@ -1,10 +1,8 @@
+import asyncio
 import random
 import sqlite3
-import asyncio
 
 import discord
-import yaml
-from discord.commands import slash_command
 from discord.ext import commands
 
 
@@ -12,6 +10,8 @@ class VoiceLines(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.play_lock = False
+
+        self.dota_wiki = self.bot.get_cog('DotaWiki')
 
         # Set up the sqlite database.
         self.connection = sqlite3.connect("responses.sqlite")
@@ -22,14 +22,8 @@ class VoiceLines(commands.Cog):
         self.cursor.execute(
             f"CREATE TABLE IF NOT EXISTS responses ({' TEXT, '.join(fields)} TEXT)")
 
-        # Load and parse the yaml file into the table.
-        with open("dota_wiki.yml", "r") as f:
-            print("Loading yaml data")
-            yaml_data = yaml.safe_load(f)
-            print("Loaded yaml data")
-
         # Populate the responses table.
-        for hero in yaml_data['heroes']:
+        for hero in self.dota_wiki.data['heroes']:
             name = hero['_name']
             responses_url = f"{hero['url']}/Responses"
             print(f"Adding {len(hero['responses'])} responses for hero {name}")

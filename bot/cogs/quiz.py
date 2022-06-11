@@ -166,7 +166,7 @@ class ShopkeeperQuiz(commands.Cog):
         game_state['words'].append(word)
 
         # Total possible gold for this answer.
-        max_gold = 25
+        max_gold = 20
 
         # Each round has three phases that last 30 seconds each.
         # If all 3 phases end without a correct answer, the game is over.

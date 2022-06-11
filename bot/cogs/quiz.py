@@ -170,7 +170,7 @@ class ShopkeeperQuiz(commands.Cog):
 
         # Each round has three phases that last 30 seconds each.
         # If all 3 phases end without a correct answer, the game is over.
-        round_time = 30
+        round_time = 23
 
         # Keep track of how many people are guessing.
         guesses = {}

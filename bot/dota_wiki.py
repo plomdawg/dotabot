@@ -47,6 +47,7 @@ def get_abilities(hero) -> list:
             'name': name,
             'lore': lore,
             'thumbnail': thumbnail,
+            'url': f"{hero.url}#Abilities"
         }
         abilities.append(ability)
 
@@ -232,7 +233,8 @@ def get_items() -> list:
                 thumbnail = img.get('src')
 
             # Load the item page.
-            page = _load_page(f"{DOTA_WIKI_URL}{element.find('a')['href']}")
+            url = f"{DOTA_WIKI_URL}{element.find('a')['href']}"
+            page = _load_page(url)
 
             # Find the info box on the page.
             info_box = page.find(class_='infobox')
@@ -243,6 +245,7 @@ def get_items() -> list:
 
             item = {
                 '_name': name,
+                'url': url,
                 'gold_cost': gold_cost,
                 'lore': lore,
                 'thumbnail': thumbnail,

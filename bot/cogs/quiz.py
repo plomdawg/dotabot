@@ -16,10 +16,11 @@ def scramble(word) -> str:
 
 
 class Word:
-    def __init__(self, text, category, image, hint=None) -> None:
+    def __init__(self, text, category, image, url, hint=None) -> None:
         self.text = text
         self.category = category
         self.image = image
+        self.url = url
         self.hint = hint
 
         # Remove quotes and dashes from the text.
@@ -49,7 +50,8 @@ def load_words(data) -> list:
             Word(
                 text=hero['_name'],
                 category="Heroes",
-                image=hero['thumbnail']
+                image=hero['thumbnail'],
+                url=hero['url']
             )
         )
         for ability in hero['abilities']:
@@ -59,7 +61,8 @@ def load_words(data) -> list:
                     text=ability['name'],
                     category="Abilities",
                     hint=ability['lore'],
-                    image=ability['thumbnail']
+                    image=ability['thumbnail'],
+                    url=ability['url']
                 )
             )
 
@@ -71,7 +74,8 @@ def load_words(data) -> list:
                 text=item['_name'],
                 category="Items",
                 hint=item['lore'],
-                image=item['thumbnail']
+                image=item['thumbnail'],
+                url=item['url']
             )
         )
 
@@ -246,7 +250,7 @@ class ShopkeeperQuiz(commands.Cog):
 
         if game_over:
             await quiz_message.add_reaction("👎")
-            embed.description += "\n**Answer**: {}".format(word.text)
+            embed.description += f"\n**Answer**: [{word.text}]({word.url})"
             if word.image is not None:
                 embed.set_thumbnail(url=word.image)
             embed.set_footer(
@@ -326,7 +330,7 @@ class ShopkeeperQuiz(commands.Cog):
             game_state['correct_answers'][user.id] = 1
 
         await correct_msg.add_reaction("👍")
-        embed.description += f"\n**Answer**: {word.text}"
+        embed.description += f"\n**Answer**: [{word.text}]({word.url})"
         if word.image is not None:
             embed.set_thumbnail(url=word.image)
         embed.set_footer(

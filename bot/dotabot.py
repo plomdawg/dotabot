@@ -76,6 +76,9 @@ class DotaBot(discord.Bot):
                     pass
             print(f"Total user reach: {user_count}")
 
+            # Load emojis.
+            self.get_cog('Emojis').load_emojis()
+
         @self.event
         async def on_guild_join(guild):
             # Try to find the #general channel to send first message.

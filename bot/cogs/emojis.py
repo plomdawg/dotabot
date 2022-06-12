@@ -1,8 +1,5 @@
 """ Emojis """
-import discord
-from discord.commands import slash_command
 from discord.ext import commands
-import os
 
 # DotA Heroes servers
 SERVERS = [650182236490170369, 650182259248463907, 650180306782912533]
@@ -30,7 +27,7 @@ class Emojis(commands.Cog):
         """ Get an emoji """
         return self.emojis.get(emoji_name, "")
 
-    async def load_emojis(self):
+    def load_emojis(self):
         """ Loads all emojis from the 3 servers above """
         for guild_id in SERVERS:
             guild = self.bot.get_guild(guild_id)

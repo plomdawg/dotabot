@@ -46,7 +46,7 @@ class Database(commands.Cog):
         values = (user.id,)
         self.cursor.execute(query, values)
         gold = self.cursor.fetchone()
-        return 0 if gold is None else gold
+        return 0 if gold is None else gold[0]
 
     @slash_command(name="top", description="List users with the most gold.")
     async def top(self, ctx):
@@ -54,10 +54,10 @@ class Database(commands.Cog):
         query = f"SELECT * FROM users ORDER BY gold DESC LIMIT 10"
         self.cursor.execute(query)
         users = self.cursor.fetchall()
-        gold = self.emojis.emojis.get('Gold', '*gold*')
+        gold_icon = self.emojis.emojis.get('Gold', '*gold*')
         text = ""
         for i, user in enumerate(users):
-            text += f"{i+1}. **{user[1]}** {user[2]} {gold}" + "\n"
+            text += f"{i+1}. **{user[1]}** {user[2]} {gold_icon}" + "\n"
         embed = discord.Embed(title="Top Users")
         embed.set_thumbnail(
             url="https://api.opendota.com/apps/dota2/images/abilities/alchemist_goblins_greed_md.png")
@@ -68,7 +68,8 @@ class Database(commands.Cog):
     async def gold(self, ctx):
         """ Sends the user's current gold balance """
         gold = self.user_get_gold(ctx.author)
-        await ctx.respond(f"{ctx.author.mention}, you have **{gold}** gold.")
+        gold_icon = self.emojis.emojis.get('Gold', '*gold*')
+        await ctx.respond(f"{ctx.author.mention}, you have **{gold}** {gold_icon}")
 
 
 def setup(bot):

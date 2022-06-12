@@ -190,7 +190,7 @@ class ShopkeeperQuiz(commands.Cog):
             except KeyError:
                 guesses[msg.author] = [guess]
 
-            return guess == word.text.lower()
+            return guess == word.clean_text.lower()
 
         # Phase 1: hard scramble
         embed = discord.Embed()

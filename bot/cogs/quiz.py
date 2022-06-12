@@ -194,6 +194,8 @@ class ShopkeeperQuiz(commands.Cog):
 
         # Phase 1: hard scramble
         embed = discord.Embed()
+        embed.set_thumbnail(
+            url="https://static.wikia.nocookie.net/dota2_gamepedia/images/5/5d/Unknown_Unit_icon.png/revision/latest/scale-to-width-down/128?cb=20170416184928")
         embed.title = f"Shopkeeper's Quiz (round {game_state['round']})"
         embed.description = f"**Unscramble:** {word.scrambled}"
         if respond:

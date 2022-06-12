@@ -319,10 +319,7 @@ class ShopkeeperQuiz(commands.Cog):
         score = int(max_gold - (elasped_time * max_gold / (round_time * 4)))
 
         # Add bonus points if more people guessed.
-        print(guesses)
-        print(score)
         score += (len(guesses.keys()) * 3) - 3
-        print(score)
 
         # Increment user's score in the game state
         user = correct_msg.author

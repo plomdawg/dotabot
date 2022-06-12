@@ -33,7 +33,7 @@ class Emojis(commands.Cog):
             guild = self.bot.get_guild(guild_id)
             for emoji in guild.emojis:
                 self.emojis[emoji.name] = str(emoji)
-        print("loaded emojis:", self.emojis)
+        print(f"Loaded {len(self.emojis.keys())} emojis.")
 
     # @commands.check(author_is_plomdawg)
     # @slash_command(name="setup", description="Play the Shopkeeper's quiz")

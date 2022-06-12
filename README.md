@@ -8,7 +8,7 @@ dotabot is a Discord bot running in Heroku that plays hero responses when typed 
 
 It also features the Shopkeeper's Quiz `/quiz`
 
-![image](https://user-images.githubusercontent.com/6510862/172955073-6d0a00af-bb11-4899-80f7-87478426f516.png)
+![image](https://user-images.githubusercontent.com/6510862/173223499-f3ba3cc6-802f-44a8-bfec-318a4c7fab77.png)
 
 ## Running the bot locally
 

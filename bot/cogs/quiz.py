@@ -12,7 +12,11 @@ def scramble(word) -> str:
     """ Randomly scrambles a word """
     char_list = list(word)
     random.shuffle(char_list)
-    return ''.join(char_list)
+    scrambled = ''.join(char_list)
+    # Try again if the word isn't scrambled.
+    if word in scrambled:
+        return scramble(word)
+    return scrambled
 
 
 class Word:

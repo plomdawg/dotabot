@@ -154,7 +154,7 @@ class VoiceLines(commands.Cog):
                 source=url,
                 options=f"-af loudnorm=I=-16.0:TP=-1.0"
             ),
-            volume=1.7
+            volume=0.2
         )
 
         # Begin playback and wait for it to finish

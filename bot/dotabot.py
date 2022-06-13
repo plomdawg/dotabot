@@ -36,7 +36,7 @@ class DotaBot(discord.Bot):
     def __init__(self):
         # Call discord.Bot() init function with a custom activity.
         activity = discord.Activity(
-            type=discord.ActivityType.watching, name="for /dota")
+            type=discord.ActivityType.watching, name="for /quiz")
         super().__init__(intents=discord.Intents.all(), activity=activity)
 
         # Expose Client ID to the cogs.

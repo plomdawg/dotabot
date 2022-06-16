@@ -126,11 +126,7 @@ class DotaBot(discord.Bot):
             # print "This interaction failed" to the user.
             if type(channel) == ApplicationContext:
                 response = await channel.respond(embed=embed)
-                logging.debug(f"send_embed() -> {response}")
                 return
-            else:
-                logging.debug(
-                    f"send_embed() -> type(channel): {type(channel)}")
 
             # Send the single message
             return await channel.send(embed=embed)
@@ -193,7 +189,6 @@ class DotaBot(discord.Bot):
             message_index = message_index + 1
 
         # Return the last message sent so reactions can be easily added
-        logging.debug(f"send_embed() -> {response}")
         return response
 
     async def add_reactions(self, message, emojis):

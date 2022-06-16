@@ -17,6 +17,8 @@ class Database(commands.Cog):
         self.cursor.execute(
             f"CREATE TABLE IF NOT EXISTS users ({','.join(user_fields)})")
         self.emojis = self.bot.get_cog('Emojis')
+        # Expose self to other cogs.
+        self.bot.database = self
 
     def add_user(self, user):
         """ Adds a new user to the database """

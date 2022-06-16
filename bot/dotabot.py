@@ -1,11 +1,10 @@
-import argparse
 import logging
 import os
+import random
 import sys
-from random import randint
 
 import discord
-from discord.ext import commands
+from discord.commands.context import ApplicationContext
 
 # Get secret tokens from environment variables.
 DISCORD_CLIENT_ID = os.environ.get('DISCORD_CLIENT_ID')
@@ -99,21 +98,21 @@ class DotaBot(discord.Bot):
 
         Returns a list of messages sent.
         """
-        MSG_LIMIT = 2048
-        messages = []
+        MAX_MSG_LENGTH = 2048
 
         # Use a random color if none was given
         if color is None:
-            color = randint(0, 0xFFFFFF)
+            color = random.randint(0, 0xFFFFFF)
 
-        # Text fits into one message, add all fields passed to function
-        if text is None or len(text) <= MSG_LIMIT:
+        # If the text is short enough to fit into one message,
+        # create and send a single embed.
+        if text is None or len(text) <= MAX_MSG_LENGTH:
             embed = discord.Embed(color=color)
             if footer is not None:
-                if footer_icon is not None:
-                    embed.set_footer(text=footer, icon_url=footer_icon)
-                else:
+                if footer_icon is None:
                     embed.set_footer(text=footer)
+                else:
+                    embed.set_footer(text=footer, icon_url=footer_icon)
             if subtitle is not None or subtext is not None:
                 embed.add_field(name=subtitle, value=subtext, inline=True)
             if thumbnail is not None:
@@ -123,46 +122,79 @@ class DotaBot(discord.Bot):
             if text is not None:
                 embed.description = text
 
+            # If this is a ctx, use respond() so the command succeeds and doesn't
+            # print "This interaction failed" to the user.
+            if type(channel) == ApplicationContext:
+                response = await channel.respond(embed=embed)
+                logging.debug(f"send_embed() -> {response}")
+                return
+            else:
+                logging.debug(
+                    f"send_embed() -> type(channel): {type(channel)}")
+
             # Send the single message
-            messages.append(await channel.send(embed=embed))
+            return await channel.send(embed=embed)
 
-        # Text must be broken up into chunks
-        else:
-            i = 0  # message index
-            lines = text.split("\n")
-            while lines:
-                # Construct the text of this message
-                text = ""
-
-                while lines and len(text + lines[0]) < MSG_LIMIT:
-                    text = text + "\n" + lines.pop(0)
-
-                embed = discord.Embed(color=color)
-                embed.description = text
-
-                # First message in chain - add the title and thumbnail
-                if i == 0:
-                    if title is not None:
-                        embed.title = title
-                    if thumbnail is not None:
-                        embed.set_thumbnail(url=thumbnail)
-                    if subtitle is not None or subtext is not None:
-                        embed.add_field(
-                            name=subtitle, value=subtext, inline=True)
-
-                # Last message in chain - add the footer
+        # If the text is too long, it must be broken into chunks.
+        message_index = 0
+        lines = text.split("\n")
+        while lines:
+            # Construct the text of this message
+            text = ""
+            while True:
                 if not lines:
-                    if footer is not None:
-                        if footer_icon is not None:
-                            embed.set_footer(text=footer, icon_url=footer_icon)
-                        else:
-                            embed.set_footer(text=footer)
+                    break
+                line = lines.pop(0) + '\n'
 
-                messages.append(await channel.send(embed=embed))
-                i = i + 1
+                # next line fits in this message, add it
+                if len(text) + len(line) < MAX_MSG_LENGTH:
+                    text += line
 
-        # Return the list of messages sent so reactions can be easily added
-        return messages
+                # one line is longer than max length of message, split the line and put the rest back
+                elif len(line) > MAX_MSG_LENGTH:
+                    cutoff = MAX_MSG_LENGTH - len(text)
+                    next_line = line[:cutoff]
+                    remainder = line[cutoff:-1]
+                    text += next_line
+                    lines.insert(0, remainder)
+                # message is full - send it
+                else:
+                    lines.insert(0, line)
+                    break
+
+            embed = discord.Embed(color=color)
+            embed.description = text
+
+            # First message in chain - add the title and thumbnail
+            if message_index == 0:
+                if title is not None:
+                    embed.title = title
+                if thumbnail is not None:
+                    embed.set_thumbnail(url=thumbnail)
+                if subtitle is not None or subtext is not None:
+                    embed.add_field(name=subtitle, value=subtext, inline=True)
+                response = await channel.send(embed=embed)
+
+            # Last message in chain - add the footer.
+            if not lines:
+                if footer is not None:
+                    if footer_icon is not None:
+                        embed.set_footer(text=footer, icon_url=footer_icon)
+                    else:
+                        embed.set_footer(text=footer)
+
+                # If this is a ctx, use respond() so the command succeeds and doesn't
+                # print "This interaction failed" to the user.
+                if type(channel) == ApplicationContext:
+                    response = await channel.respond(embed=embed)
+                else:
+                    response = await channel.send(embed=embed)
+
+            message_index = message_index + 1
+
+        # Return the last message sent so reactions can be easily added
+        logging.debug(f"send_embed() -> {response}")
+        return response
 
     async def add_reactions(self, message, emojis):
         """ Adds a list of reactions to a message, ignoring NotFound errors """

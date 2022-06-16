@@ -1,11 +1,10 @@
-import argparse
 import logging
 import os
+import random
 import sys
-from random import randint
 
 import discord
-from discord.ext import commands
+from discord.commands.context import ApplicationContext
 
 # Get secret tokens from environment variables.
 DISCORD_CLIENT_ID = os.environ.get('DISCORD_CLIENT_ID')

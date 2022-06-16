@@ -8,6 +8,11 @@ from discord.commands import slash_command
 from discord.ext import commands
 
 
+def strip_punctuation(text):
+    """ Remove quotes and dashes from the text. """
+    return text.replace("'", "").replace("-", " ")
+
+
 def scramble(word) -> str:
     """ Randomly scrambles a word """
     char_list = list(word)
@@ -27,21 +32,21 @@ class Word:
         self.url = url
         self.hint = hint
 
-        # Remove quotes and dashes from the text.
-        self.clean_text = self.text.replace("'", "").replace("-", " ")
-
     @property
     def scrambled(self) -> str:
         """ Returns the scrambled text """
-        return scramble(self.clean_text.upper())
+        return scramble(strip_punctuation(self.text).upper())
 
     @property
     def easy_scrambled(self) -> str:
         """ Returns the scrambled text, with spaces in place """
         scrambled = ""
-        for word in self.clean_text.split(" "):
+        for word in strip_punctuation(self.text).split(" "):
             scrambled += scramble(word) + " "
-        return scrambled[:-1].upper()  # remove trailing space
+        # Remove trailing space and capitalize.
+        return scrambled[:-1].upper()
+
+
 
 
 def load_words(data) -> list:

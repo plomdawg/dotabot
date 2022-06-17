@@ -260,9 +260,9 @@ class Quiz:
         # Single winner.
         elif len(winners) == 1:
             text = "Winner: **{}** earned **{}** gold with {} answers!\n".format(
-                winner.display_name,
+                winner[0].display_name,
                 top_score,
-                self.correct_answers[winner]
+                self.correct_answers[winner[0]]
             )
 
         # Multiple winners!

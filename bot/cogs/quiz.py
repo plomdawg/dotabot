@@ -51,8 +51,8 @@ class Word:
         return scrambled[:-1].upper()
 
     def check(self, word) -> bool:
-        """ Returns True if text matches the word. """
-        return word == strip_punctuation(self.text)
+        """ Returns True if text matches the word, ignoring case and punctuation. """
+        return strip_punctuation(word.lower()) == strip_punctuation(self.text.lower())
 
 
 class Quiz:
@@ -137,7 +137,8 @@ class Quiz:
         start_time = time.perf_counter()
 
         # Send a message.
-        message = await self.bot.send_embed(self.channel, text="Grabbing next word, sit tight!")
+        text = f"Starting round **{self.round_number}**, sit tight!"
+        message = await self.bot.send_embed(self.channel, text=text)
 
         # Grab the next word.
         self.next_word()
@@ -151,16 +152,13 @@ class Quiz:
             if msg.channel.guild != self.channel.guild:
                 return False
 
-            # Convert the guess to lower case.
-            guess = msg.content.lower().replace("'", "").replace("-", " ").strip()
-
             # Keep track of guesses per user.
             try:
-                self.guesses[msg.author].append(guess)
+                self.guesses[msg.author].append(msg.content)
             except KeyError:
-                self.guesses[msg.author] = [guess]
+                self.guesses[msg.author] = [msg.content]
 
-            return self.current_word.check(guess)
+            return self.current_word.check(msg.content)
 
         # Begin phase 1: hard scramble.
         answer, embed = await self.start_phase(message, check)

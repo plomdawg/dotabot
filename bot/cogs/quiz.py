@@ -83,11 +83,11 @@ class Quiz:
         # Add bonus points if more people guessed.
         score += (len(self.guesses.keys()) * 3) - 3
         try:
-            self.scores[user.id] += score
-            self.correct_answers[user.id] += 1
+            self.scores[user] += score
+            self.correct_answers[user] += 1
         except KeyError:
-            self.scores[user.id] = score
-            self.correct_answers[user.id] = 1
+            self.scores[user] = score
+            self.correct_answers[user] = 1
         return score
 
     async def start_phase(self, message, check, category=False, easy=False, hint=False):
@@ -278,7 +278,7 @@ class Quiz:
                 text += " -- {} got {} correct (**{}** gold)\n".format(
                     user.display_name,
                     self.correct_answers[user],
-                    self.scores[user.id]
+                    self.scores[user]
                 )
 
         # Create the game over message.

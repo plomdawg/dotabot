@@ -6,8 +6,6 @@ import time
 import discord
 from discord.commands import slash_command
 from discord.ext import commands
-from matplotlib.image import thumbnail
-from pyrsistent import T
 
 # Pictures used for the embedded messages.
 SHOPKEEPER_IMAGE = "https://i.imgur.com/Xyf1VjQ.png"
@@ -96,7 +94,7 @@ class Quiz:
         """ Start a phase by editing the message given. Returns the answer if solved. """
         # Manually create an embedded message.
         embed = discord.Embed()
-        embed.set_thumbnail(url=SHOPKEEPER_IMAGE)
+        embed.set_thumbnail(url=UNKNOWN_IMAGE)
         embed.title = f"Shopkeeper's Quiz (round {self.round_number})"
 
         # Add the scrambled word.

@@ -6,6 +6,8 @@ import time
 import discord
 from discord.commands import slash_command
 from discord.ext import commands
+from matplotlib.image import thumbnail
+from pyrsistent import T
 
 # Pictures used for the embedded messages.
 SHOPKEEPER_IMAGE = "https://i.imgur.com/Xyf1VjQ.png"
@@ -260,9 +262,9 @@ class Quiz:
         # Single winner.
         elif len(winners) == 1:
             text = "Winner: **{}** earned **{}** gold with {} answers!\n".format(
-                winner[0].display_name,
+                winners[0].display_name,
                 top_score,
-                self.correct_answers[winner[0]]
+                self.correct_answers[winners[0]]
             )
 
         # Multiple winners!
@@ -281,13 +283,14 @@ class Quiz:
                     self.scores[user]
                 )
 
-        # Create the game over message.
-        embed = discord.Embed()
-        embed.description = text
-        embed.title = "Shopkeeper's Quiz Results"
-        embed.set_thumbnail(url=SHOPKEEPER_IMAGE)
-        embed.set_footer(text=f"To play again, press NEW or type /quiz")
-        message = await self.channel.send(embed=embed)
+        # Send the game over message.
+        message = await self.bot.send_embed(
+            channel=self.channel,
+            title="Shopkeeper's Quiz Results",
+            text=text,
+            thumbnail=SHOPKEEPER_IMAGE,
+            footer=f"To play again, press NEW or type /quiz"
+        )
         await message.add_reaction("🆕")
 
 

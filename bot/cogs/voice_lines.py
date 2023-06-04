@@ -129,7 +129,7 @@ class VoiceLines(commands.Cog):
 
         # Delete our own message in 30 seconds.
         if warning_message is not None:
-            asyncio.sleep(30)
+            await asyncio.sleep(30)
             await warning_message.delete()
 
     def get_voice_responses(self, exact_text=None, text=None, index=None, name=None):

@@ -59,7 +59,15 @@ class Database(commands.Cog):
         gold_icon = self.emojis.emojis.get('Gold', '*gold*')
         text = ""
         for i, user in enumerate(users):
-            text += f"{i+1}. **{user[1]}** {user[2]} {gold_icon}" + "\n"
+            if i == 0:
+              emoji = ":crown:"
+            elif i == 1:
+              emoji = ":second_place:"
+            elif i == 2:
+              emoji = ":third_place:"
+            else:
+              emoji = ""
+            text += f"{i+1}. **{user[1]}**: {user[2]} {gold_icon} {emoji}" + "\n"
         embed = discord.Embed(title="Top Users")
         embed.set_thumbnail(
             url="https://api.opendota.com/apps/dota2/images/abilities/alchemist_goblins_greed_md.png")

@@ -87,6 +87,15 @@ class DotaBot(discord.Bot):
                 channel = guild.text_channels[0]
             await channel.send('Hello! You can send either a full quote with exact punctuation ("Haha!") or a partial quote prefixed by "dota" ("dota haha")')
             await channel.send('Support server: https://discord.gg/Czj2g9c')
+            
+        @self.event
+        async def on_voice_state_update(member, before, after):
+          # Leave if nobody is in the channel with the bot.
+          vc = discord.utils.get(self.voice_clients, guild=member.guild)
+          if vc and vc.channel:
+              if not any([not user.bot for user in vc.channel.members]):
+                  await vc.disconnect()
+          
 
     async def send_embed(self, channel, color=None, footer=None, footer_icon=None, subtitle=None,
                          subtext=None, text=None, title=None, thumbnail=None):

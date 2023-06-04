@@ -207,10 +207,10 @@ def get_items() -> list:
     content.find(id='pageTabber').decompose()
     content.find(id='toc').decompose()
     content.find('p').decompose()
-    retired_element = content.find(id="Retired")
-    for element in retired_element.find_all_next():
-        element.decompose()
-    retired_element.decompose()
+    #retired_element = content.find(id="Retired")
+    #for element in retired_element.find_all_next():
+    #    element.decompose()
+    #retired_element.decompose()
 
     # Find all item lists on the page.
     itemlist_elements = content.find_all(class_='itemlist')
@@ -240,8 +240,13 @@ def get_items() -> list:
             info_box = page.find(class_='infobox')
 
             # Load the lore text
-            lore = info_box.find(
-                'td', attrs={'style': 'font-style:italic; padding:6px 10px;'}).text.strip()
+            lore = info_box.find('td', attrs={'style': 'font-style:italic; padding:6px 10px;'})
+
+            # Some items don't have lore.
+            if lore:
+              lore = lore.text.strip()
+            else:
+              lore = "No lore found."
 
             item = {
                 '_name': name,

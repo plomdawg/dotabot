@@ -165,6 +165,11 @@ def get_responses(voice, url) -> list:
 
         # Remove extra spaces from the element.
         voice_line_text = element.text.strip()
+        
+        # Remove "followup" from the end of the text.
+        # See: https://dota2.fandom.com/wiki/The_Stanley_Parable_Announcer_Pack#welcome
+        if voice_line_text.endswith(" followup"):
+            voice_line_text = voice_line_text.replace(" followup", "").strip()
 
         # Add the response to the list.
         response = {

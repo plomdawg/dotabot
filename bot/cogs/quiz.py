@@ -341,9 +341,9 @@ class ShopkeeperQuiz(commands.Cog):
 
         # Add the heroes and abilities.
         for hero in self.dota_wiki.data['heroes']:
-            print(f"Loading {hero['_name']}")
+            #print(f"Loading {hero['_name']}")
             emoji = self.emojis.get(hero['_name'])
-            print(f"emoji: {emoji}")
+            #print(f"emoji: {emoji}")
             
             # Heroes do not have a hint.
             self.words.append(

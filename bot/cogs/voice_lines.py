@@ -73,7 +73,7 @@ class VoiceLines(commands.Cog):
                 
                 # Check if the text starts with a number. It can be a multidigit number.
                 # if so, use it as the list start
-                if text[0].isdigit() and text.contains(" "):
+                if text[0].isdigit() and " " in text:
                     list_start = int(text.split(' ', 1)[0]) - 1
                     text = text.split(' ', 1)[1]
 
@@ -118,18 +118,36 @@ class VoiceLines(commands.Cog):
             self.db_cursor.executemany(
                 query, ([voice['name'], voice['url'], response['url'], response['text'], voice['thumbnail']] for response in voice['responses']))
 
-    async def respond(self, message, responses, index, list_mode=False, forward=True):
+    async def respond(self, message, responses, index, list_mode=False, list_start=0, forward=True):
         text_channel = message.channel
         
         if list_mode:
+            max_list_length = 16
             message = f"Found {len(responses)} responses."
-            if len(responses) > 30:
-                message += " Showing the first 30."
+            
+            # Check if the requested start is out of bounds.
+            if list_start >= len(responses):
+                message = f"Start index **{list_start+1}** is greater than the number of responses ({len(responses)})."
+                return await self.bot.send_embed(channel=text_channel, text=message)
+            
+            elif list_start < 0:
+                message = f"Start index **{list_start+1}** is less than 1."
+                return await self.bot.send_embed(channel=text_channel, text=message)
+            
+            # The list is longer than the max list length.
+            if len(responses) > max_list_length:
+                if list_start == 0:
+                    message = f" Showing the first **{max_list_length}**."
+                else:
+                    message = f" Showing **{list_start+1}** to **{list_start+max_list_length}**."
+                list_end = list_start + max_list_length
+                responses = responses[list_start:list_end]
+
                 message += "\nUse `list [n] [command]` to list starting at a different index."
-                responses = responses[:30]
+
             for i, response in enumerate(responses):
                 name, response, url, text, thumbnail = response
-                voice_line = f"\n{i+1}. [{text}]({response}) [({name})]({url})"
+                voice_line = f"\n{i+1+list_start}. [{text}]({response}) [({name})]({url})"
                 print(voice_line)
                 message += voice_line
             print(message)

@@ -182,6 +182,7 @@ class DotaBot(discord.Bot):
                 if subtitle is not None or subtext is not None:
                     embed.add_field(name=subtitle, value=subtext, inline=True)
                 response = await channel.send(embed=embed)
+                continue
 
             # Last message in chain - add the footer.
             if not lines:

@@ -2,6 +2,7 @@ import logging
 import os
 import random
 import sys
+import asyncio
 
 import discord
 from discord.commands.context import ApplicationContext
@@ -170,8 +171,7 @@ class DotaBot(discord.Bot):
                     lines.insert(0, line)
                     break
 
-            embed = discord.Embed(color=color)
-            embed.description = text
+            embed = discord.Embed(color=color, description=text)
 
             # First message in chain - add the title and thumbnail
             if message_index == 0:
@@ -191,12 +191,12 @@ class DotaBot(discord.Bot):
                     else:
                         embed.set_footer(text=footer)
 
-                # If this is a ctx, use respond() so the command succeeds and doesn't
-                # print "This interaction failed" to the user.
-                if type(channel) == ApplicationContext:
-                    response = await channel.respond(embed=embed)
-                else:
-                    response = await channel.send(embed=embed)
+            # If this is a ctx, use respond() so the command succeeds and doesn't
+            # print "This interaction failed" to the user.
+            if type(channel) == ApplicationContext:
+                response = await channel.respond(embed=embed)
+            else:
+                response = await channel.send(embed=embed)
 
             message_index = message_index + 1
 

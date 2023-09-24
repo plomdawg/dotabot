@@ -62,31 +62,45 @@ class VoiceLines(commands.Cog):
 
             # Check if the message ends in a number.
             text, index = get_index_from_query(message.content)
+            
+            # Check if the message starts with "list" (e.g. "list hero juggernaut")
+            # List mode: list all possible responses for the query without playing it.
+            list_mode = False
+            list_start = 0
+            if text.lower().startswith("list "):
+                list_mode = True
+                text = text.split(' ', 1)[1]
+                
+                # Check if the text starts with a number. It can be a multidigit number.
+                # if so, use it as the list start
+                if text[0].isdigit() and text.contains(" "):
+                    list_start = int(text.split(' ', 1)[0]) - 1
+                    text = text.split(' ', 1)[1]
 
             # Check if the message is an exact match for a response.
             responses, index = self.get_voice_responses(
                 exact_text=text, index=index)
             if responses:
-                return await self.respond(message, responses, index)
+                return await self.respond(message, responses, index, list_mode, list_start)
 
             # Check if the message starts with "dota" (e.g. "dota haha")
-            if text.lower().startswith("dota"):
+            if text.lower().startswith("dota ") or text.lower().startswith("any "):
                 # Split off the prefix.
                 text = text.split(' ', 1)[1]
                 # Get a random response from any hero that contains the text.
                 responses, index = self.get_voice_responses(
                     text=text, index=index)
                 if responses:
-                    return await self.respond(message, responses, index)
+                    return await self.respond(message, responses, index, list_mode, list_start)
 
-            elif text.lower().startswith("hero"):
+            elif text.lower().startswith("hero "):
                 # Split off the prefix.
                 hero_name = text.split(' ', 1)[1]
                 # Get a random response from the given hero that contains the text.
                 responses, index = self.get_voice_responses(
                     name=hero_name, index=index)
                 if responses:
-                    return await self.respond(message, responses, index)
+                    return await self.respond(message, responses, index, list_mode, list_start)
 
     def create_database(self):
         """ Creates the database and loads the json file into it. """
@@ -104,10 +118,24 @@ class VoiceLines(commands.Cog):
             self.db_cursor.executemany(
                 query, ([voice['name'], voice['url'], response['url'], response['text'], voice['thumbnail']] for response in voice['responses']))
 
-    async def respond(self, message, responses, index, forward=True):
-        name, response, url, text, thumbnail = responses[index]
+    async def respond(self, message, responses, index, list_mode=False, forward=True):
         text_channel = message.channel
+        
+        if list_mode:
+            message = f"Found {len(responses)} responses."
+            if len(responses) > 30:
+                message += " Showing the first 30."
+                responses = responses[:30]
+            for i, response in enumerate(responses):
+                name, response, url, text, thumbnail = response
+                voice_line = f"\n{i+1}. [{text}]({response}) [({name})]({url})"
+                print(voice_line)
+                message += voice_line
+            print(message)
+            return await self.bot.send_embed(channel=text_channel, text=message)
+        
         voice_channel = message.author.voice.channel
+        name, response, url, text, thumbnail = responses[index]
         text = f"[{text} ({name})]({response})"
         footer = f"voice line {index+1} out of {len(responses)}"
         warning_message = None

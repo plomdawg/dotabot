@@ -125,6 +125,7 @@ class VoiceLines(commands.Cog):
             message = f"Found {len(responses)} responses."
             if len(responses) > 30:
                 message += " Showing the first 30."
+                message += "\nUse `list [n] [command]` to list starting at a different index."
                 responses = responses[:30]
             for i, response in enumerate(responses):
                 name, response, url, text, thumbnail = response

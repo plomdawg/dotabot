@@ -91,20 +91,18 @@ class VoiceLines(commands.Cog):
     def create_database(self):
         """ Creates the database and loads the json file into it. """
         # Generate the table if needed.
-        fields = ("name", "responses_url", "url", "text", "thumbnail")
+        fields = ("name", "voice_url", "url", "text", "thumbnail")
         self.db_cursor.execute(
             f"CREATE TABLE IF NOT EXISTS responses ({' TEXT, '.join(fields)} TEXT)")
 
         # Populate the responses table.
-        for hero in self.dota_wiki.data['heroes']:
-            name = hero['_name']
-            responses_url = f"{hero['url']}/Responses"
-            print(f"Adding {len(hero['responses'])} responses for hero {name}")
+        for voice in self.dota_wiki.data['voices']:
+            print(f"Adding {len(voice['responses'])} responses for {voice['name']}")
 
             query = f"INSERT or IGNORE INTO responses ({','.join(fields)}) VALUES (?,?,?,?,?)"
 
             self.db_cursor.executemany(
-                query, ([name, responses_url, response['url'], response['text'], hero['thumbnail']] for response in hero['responses']))
+                query, ([voice['name'], voice['url'], response['url'], response['text'], voice['thumbnail']] for response in voice['responses']))
 
     async def respond(self, message, responses, index, forward=True):
         name, response, url, text, thumbnail = responses[index]
@@ -199,7 +197,7 @@ class VoiceLines(commands.Cog):
 
     async def connect_to_voice_channel(self, voice_channel):
         """ Connects to a voice channel. Returns the voice channel or None if error """
-        print("Connecting to voice channel:", voice_channel)
+        #print("Connecting to voice channel:", voice_channel)
         try:
             self.vc = await voice_channel.connect()
             while not self.vc.is_connected():
@@ -207,7 +205,8 @@ class VoiceLines(commands.Cog):
             print("Successfully connected to:")
             print(self.vc.channel.name)
         except discord.errors.ClientException:
-            print("Already connected")
+            #print("Already connected")
+            pass
         except asyncio.TimeoutError:
             print("Timed out!")
 

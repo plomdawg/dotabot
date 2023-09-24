@@ -10,6 +10,50 @@ DOTA_WIKI_URL = "https://dota2.fandom.com"
 # Fix yaml indenting (https://stackoverflow.com/a/39681672/12757998).
 
 
+class Hero:
+    def __init__(self, element) -> None:
+        # Hero name (e.g. 'Techies')
+        # Replace escape code with space.
+        self.name = element.text.replace('\xa0', ' ')
+
+        # Dota wiki URL (e.g. 'https://dota2.fandom.com/wiki/Techies')
+        self.url = f"{DOTA_WIKI_URL}{element.get('href').replace('/Lore', '')}"
+
+        # Thumbnail URL.
+        self.thumbnail = get_thumbnail(self)
+
+        # Load abilities.
+        self.abilities = get_abilities(self)
+
+        print(
+            f"{self.name} has {len(self.abilities)} abilities.")
+
+    def to_dict(self) -> dict:
+        return {
+            '_name': self.name,
+            'type': 'hero',
+            'url': self.url,
+            'thumbnail': self.thumbnail,
+            'abilities': self.abilities,
+        }
+
+
+class Voice:
+    def __init__(self, name, url) -> None:
+        self.name = name
+        self.url = url
+        self.thumbnail = "https://icon-library.net/images/dota-2-icon/dota-2-icon-28.jpg"
+        self.responses = []
+
+    def to_dict(self) -> dict:
+        return {
+            'name': self.name,
+            'url': self.url,
+            'thumbnail': self.thumbnail,
+            'responses': self.responses,
+        }
+
+
 class Dumper(yaml.Dumper):
     def increase_indent(self, flow=False, indentless=False):
         return super(Dumper, self).increase_indent(flow, False)
@@ -17,7 +61,6 @@ class Dumper(yaml.Dumper):
 
 def _load_page(url) -> BeautifulSoup:
     # Load the page into BeautifulSoup.
-    print(f"Loading: {url}")
     page = requests.get(url)
     return BeautifulSoup(page.text, 'html.parser')
 
@@ -54,52 +97,116 @@ def get_abilities(hero) -> list:
 
     return abilities
 
+def get_thumbnail_from_info_box(page) -> str:
+    """ Tries to load a thumbnail from an info box. """
+    info_box = page.find(class_='infobox')
+    if info_box is not None:
+        info_box_img = info_box.find('img')
+        if info_box_img is not None:
+            thumbnail = info_box_img.get('data-src')
+            if thumbnail is None:
+                thumbnail = info_box_img.get('src')
+            return thumbnail
+    return None
 
-def get_responses(hero) -> list:
-    """ Returns a list of Response objects for a Hero """
-    responses = []
+def get_thumbnail_from_page(page: BeautifulSoup, recursing=False) -> str:
+    """ Tries to load a thumbnail from a page. """
+    
+    # Try to find a thumbnail in the info box.
+    thumbnail = get_thumbnail_from_info_box(page)
+    
+    if thumbnail is not None:
+        return thumbnail
+    
+    # Try to find the pageTabber
+    if not recursing:
+        page_tabber = page.find(id='pageTabber')
+        if page_tabber is not None:
+            # Find the first link in the page tabber.
+            first_link = page_tabber.find('a')
+            if first_link is not None:
+                # Load the page for the first link.
+                url = DOTA_WIKI_URL + first_link.get('href')
+                page = _load_page(url)
+                return get_thumbnail_from_page(page, recursing=True)
 
-    # Dota wiki page that lists all responses for a hero.
-    page = _load_page(f"{hero.url}/Responses")
+def get_responses(voice, url) -> list:
+    """ Returns a list of Response objects from a single page """
+    page = _load_page(url)
 
     # Find the main content on the page.
     content = page.find(class_='mw-parser-output')
 
+    thumbnail = get_thumbnail_from_page(page)
+    if thumbnail is not None:
+        voice.thumbnail = thumbnail
     # Skip pages that don't have content.
     # (like https://dota2.fandom.com/wiki/Crystal_Maiden/Dragon%27s_Blood/Responses)
-    if content is not None:
+    if content is None:
+        return []
 
-        # Find all of the response elements on the page.
-        for element in content.find_all('li'):
-            audio_element = element.find('audio')
+    # Find all of the response elements on the page.
+    for element in content.find_all('li'):
+        audio_element = element.find('audio')
 
-            # Ignore elements that don't contain an audio element.
-            if audio_element is None:
-                continue
+        # Ignore elements that don't contain an audio element.
+        if audio_element is None:
+            continue
 
-            # Ignore elements that don't contain an audio link.
-            audio_source = audio_element.find('source')
-            if audio_source is None:
-                continue
-            voice_line_url = audio_source.get('src')
+        # Ignore elements that don't contain an audio link.
+        audio_source = audio_element.find('source')
+        if audio_source is None:
+            continue
+        voice_line_url = audio_source.get('src')
 
-            # Remove italicized text.
-            for elem in element.find_all('span'):
-                elem.decompose()
+        # Remove italicized text.
+        for elem in element.find_all('span'):
+            elem.decompose()
 
-            # Remove extra spaces from the element.
-            voice_line_text = element.text.strip()
+        # Remove extra spaces from the element.
+        voice_line_text = element.text.strip()
 
-            # Add the response to the dict.
-            # responses[voice_line_text] = voice_line_url
-            response = {
-                'text': voice_line_text,
-                'url': voice_line_url
-            }
-            responses.append(response)
+        # Add the response to the list.
+        response = {
+            'text': voice_line_text,
+            'url': voice_line_url,
+        }
+        voice.responses.append(response)
+    return voice
 
-    # Return the responses.
-    return responses
+
+def get_all_voices() -> list:
+    """ Returns a list of all voices as dicts. """
+    voices = []
+
+    # This page contains links to all voice pages.
+    url = DOTA_WIKI_URL + "/wiki/Category:Responses"
+    page = _load_page(url)
+
+    # Find all links in the main content.
+    content = page.find(class_='mw-content-ltr')
+    links = content.find_all('a')
+
+    print(f"Found {len(links)} voices.")
+    for i, link in enumerate(links):
+        
+        url = DOTA_WIKI_URL + link.get('href')
+
+        # Remove "/Responses" from the link text
+        voice_name = link.text.replace("/Responses", "")
+
+        # Create a voice object.
+        voice = Voice(voice_name, url)
+
+        # Parse each page for responses.
+        voice = get_responses(voice, url)
+       
+        # Print the links with their url and hrefs.
+        print(f"{i} {link.text} - {link.get('href')} - {len(voice.responses)} responses")
+
+        voices.append(voice.to_dict())
+
+    return voices
 
 
 def get_thumbnail(hero) -> str:
@@ -131,39 +238,9 @@ def get_thumbnail(hero) -> str:
     else:
         hero = name.replace(' ', '_').replace('-', '').lower()
         url = f"https://api.opendota.com/apps/dota2/images/heroes/{hero}_full.png"
+        
 
     return url
-
-
-class Hero:
-    def __init__(self, element) -> None:
-        # Hero name (e.g. 'Techies')
-        # Replace escape code with space.
-        self.name = element.text.replace('\xa0', ' ')
-
-        # Dota wiki URL (e.g. 'https://dota2.fandom.com/wiki/Techies')
-        self.url = f"{DOTA_WIKI_URL}{element.get('href').replace('/Lore', '')}"
-
-        # Thumbnail URL.
-        self.thumbnail = get_thumbnail(self)
-
-        # Load responses.
-        self.responses = get_responses(self)
-
-        # Load abilities.
-        self.abilities = get_abilities(self)
-
-        print(
-            f"{self.name} has {len(self.responses)} responses and {len(self.abilities)} abilities.")
-
-    def to_dict(self) -> dict:
-        return {
-            '_name': self.name,
-            'url': self.url,
-            'thumbnail': self.thumbnail,
-            'abilities': self.abilities,
-            'responses': self.responses
-        }
 
 
 def get_heroes() -> list:
@@ -237,13 +314,14 @@ def get_items() -> list:
             info_box = page.find(class_='infobox')
 
             # Load the lore text
-            lore = info_box.find('td', attrs={'style': 'font-style:italic; padding:6px 10px;'})
+            lore = info_box.find(
+                'td', attrs={'style': 'font-style:italic; padding:6px 10px;'})
 
             # Some items don't have lore.
             if lore:
-              lore = lore.text.strip()
+                lore = lore.text.strip()
             else:
-              lore = "No lore found."
+                lore = "No lore found."
 
             item = {
                 '_name': name,
@@ -261,7 +339,12 @@ def get_items() -> list:
 
 if __name__ == "__main__":
     # Convert list of heroes to yaml.
-    data = {'heroes': [], 'items': []}
+    data = {'heroes': [], 'items': [], }
+
+    # Get list of voices.
+    data['voices'] = get_all_voices()
+    for voice in data['voices']:
+        print(voice['thumbnail'])
 
     # Get list of items.
     data['items'] = get_items()
@@ -269,12 +352,12 @@ if __name__ == "__main__":
     # Get list of heroes.
     for hero in get_heroes():
         data['heroes'].append(hero.to_dict())
-        
+
     # Export as yaml file.
     with open('dota_wiki.yml', 'w') as yaml_file:
         yaml.dump(data, yaml_file, default_flow_style=False, Dumper=Dumper,
                   width=float("inf"))
-    
+
     # Export as json file.
     with open('dota_wiki.json', 'w') as json_file:
         json.dump(data, json_file, indent=2)

@@ -29,11 +29,12 @@ def scramble(word) -> str:
 
 
 class Word:
-    def __init__(self, text, category, image, url, hint=None) -> None:
+    def __init__(self, text, category, image, url, emoji=None, hint=None) -> None:
         self.text = text
         self.category = category
         self.image = image
         self.url = url
+        self.emoji = emoji
         self.hint = hint
 
     @property
@@ -107,16 +108,16 @@ class Quiz:
         # Add the category.
         if category:
             description += f"\n**Category:** {self.current_word.category} "
-            embed.set_footer(text="Here's a hint!")
+            embed.set_footer(text="*Here's a hint!*")
 
         # Add the hint.
         if hint:
             description += f"\n**Hint:** {self.current_word.hint} "
-            embed.set_footer(text="Here's another hint!")
+            embed.set_footer(text="*Here's another hint!*")
 
         # Change the footer if it's easy scrambled.
         if easy:
-            embed.set_footer(text="Spaces are in places!")
+            embed.set_footer(text="*Spaces are in their places!*")
 
         # Edit the message for this round.
         embed.description = description
@@ -180,7 +181,7 @@ class Quiz:
         #
 
         # Add the answer to the quiz message.
-        embed.description += f"\n**Answer**: [{self.current_word.text}]({self.current_word.url})"
+        embed.description += f"\n**Answer**: {self.current_word.emoji} [{self.current_word.text}]({self.current_word.url})"
 
         # Add the image to the quiz message.
         if self.current_word.image is not None:
@@ -292,50 +293,6 @@ class Quiz:
         await message.add_reaction("🆕")
 
 
-def load_words(data) -> list:
-    words = []
-
-    # Add the heroes and abilities.
-    for hero in data['heroes']:
-        # Heroes do not have a hint.
-        words.append(
-            Word(
-                text=hero['_name'],
-                category="Heroes",
-                image=hero['thumbnail'],
-                url=hero['url']
-            )
-        )
-        for ability in hero['abilities']:
-            # Use the lore as the hint.
-            words.append(
-                Word(
-                    text=ability['name'],
-                    category="Abilities",
-                    hint=ability['lore'],
-                    image=ability['thumbnail'],
-                    url=ability['url']
-                )
-            )
-
-    # Add the items.
-    for item in data['items']:
-        # Use the lore as the hint.
-        words.append(
-            Word(
-                text=item['_name'],
-                category="Items",
-                hint=item['lore'],
-                image=item['thumbnail'],
-                url=item['url']
-            )
-        )
-
-    print(f"Loaded {len(words)} words.")
-
-    return words
-
-
 class ShopkeeperQuiz(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -344,9 +301,7 @@ class ShopkeeperQuiz(commands.Cog):
         # Load other cogs.
         self.database = self.bot.get_cog('Database')
         self.dota_wiki = self.bot.get_cog('DotaWiki')
-
-        # Load the words and hints.
-        self.words = load_words(self.dota_wiki.data)
+        self.emojis = self.bot.get_cog('Emojis')
 
     @ commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
@@ -379,6 +334,54 @@ class ShopkeeperQuiz(commands.Cog):
             await reaction.remove(user)
         except discord.errors.NotFound:
             pass
+          
+        
+    def load_words(self) -> list:
+        self.words = []
+
+        # Add the heroes and abilities.
+        for hero in self.dota_wiki.data['heroes']:
+            print(f"Loading {hero['_name']}")
+            emoji = self.emojis.get(hero['_name'])
+            print(f"emoji: {emoji}")
+            
+            # Heroes do not have a hint.
+            self.words.append(
+                Word(
+                    text=hero['_name'],
+                    category="Heroes",
+                    image=hero['thumbnail'],
+                    url=hero['url'],
+                    emoji=emoji,
+                )
+            )
+            for ability in hero['abilities']:
+                # Use the lore as the hint.
+                self.words.append(
+                    Word(
+                        text=ability['name'],
+                        category="Abilities",
+                        hint=ability['lore'],
+                        image=ability['thumbnail'],
+                        url=ability['url'],
+                        emoji=emoji,
+                    )
+                )
+
+        # Add the items.
+        for item in self.dota_wiki.data['items']:
+            # Use the lore as the hint.
+            self.words.append(
+                Word(
+                    text=item['_name'],
+                    category="Items",
+                    hint=item['lore'],
+                    image=item['thumbnail'],
+                    url=item['url']
+                )
+            )
+
+        print(f"Loaded {len(self.words)} quiz words.")
 
     async def shopkeeper_quiz(self, bot, channel):
         # Try to find existing quiz.

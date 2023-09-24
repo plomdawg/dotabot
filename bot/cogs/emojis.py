@@ -24,7 +24,8 @@ class Emojis(commands.Cog):
         self.emojis = {}
 
     def get(self, emoji_name):
-        """ Get an emoji """
+        """ Get an emoji. """
+        emoji_name = emoji_name.replace(' ', '')
         return self.emojis.get(emoji_name, "")
 
     def load_emojis(self):

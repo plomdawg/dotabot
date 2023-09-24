@@ -1,5 +1,6 @@
 import requests
 import yaml
+import json
 from bs4 import BeautifulSoup
 import time
 import sys
@@ -207,10 +208,6 @@ def get_items() -> list:
     content.find(id='pageTabber').decompose()
     content.find(id='toc').decompose()
     content.find('p').decompose()
-    #retired_element = content.find(id="Retired")
-    #for element in retired_element.find_all_next():
-    #    element.decompose()
-    #retired_element.decompose()
 
     # Find all item lists on the page.
     itemlist_elements = content.find_all(class_='itemlist')
@@ -272,7 +269,12 @@ if __name__ == "__main__":
     # Get list of heroes.
     for hero in get_heroes():
         data['heroes'].append(hero.to_dict())
-
+        
+    # Export as yaml file.
     with open('dota_wiki.yml', 'w') as yaml_file:
         yaml.dump(data, yaml_file, default_flow_style=False, Dumper=Dumper,
                   width=float("inf"))
+    
+    # Export as json file.
+    with open('dota_wiki.json', 'w') as json_file:
+        json.dump(data, json_file, indent=2)

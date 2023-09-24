@@ -6,8 +6,10 @@ import discord
 from discord.ext import commands
 
 
-def split_index_from_query(text):
-    """ Checks if the last token of the text is a number, and splits it off if so. """
+def get_index_from_query(text):
+    """ Splits off the last token in the string if it's a number.
+        Example: "dota haha 2" -> ("dota haha", 2)
+    """
     try:
         tokens = text.split(' ')
         index = int(tokens[-1]) - 1
@@ -59,7 +61,7 @@ class VoiceLines(commands.Cog):
                 return
 
             # Check if the message ends in a number.
-            text, index = split_index_from_query(message.content)
+            text, index = get_index_from_query(message.content)
 
             # Check if the message is an exact match for a response.
             responses, index = self.get_voice_responses(

@@ -75,8 +75,11 @@ class DotaBot(discord.Bot):
                     pass
             print(f"Total user reach: {user_count}")
 
-            # Load emojis.
+            # Load emojis now that we're connected to discord servers.
             self.get_cog('Emojis').load_emojis()
+
+            # Load the quiz now that the emojis are loaded.
+            self.get_cog('ShopkeeperQuiz').load_words()
 
         @self.event
         async def on_guild_join(guild):
